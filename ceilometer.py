@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import matplotlib.pyplot as plt
 import re
-import socket
-from pprint import pprint
-
-HOST = "10.2.3.13"  # ceilometer fixed ip
-PORT = 2001  # Port to listen on (non-privileged ports are > 1023)
-
 
 
 def hex5_to_int(s):
@@ -19,22 +12,35 @@ def hex5_to_int(s):
     return b
 
 
-
-
-
 feet_per_meter=3.28084
 
 def parse_ceilometer_chunk(chunk):
+    """
+    parses chunks of data that follows the format as described on p63 here:
+        http://cedadocs.ceda.ac.uk/1240/1/CL31_User%27s_Guide_M210482EN-F.pdf
 
+    Parameters
+    ----------
+    chunk : a list of lines as read from the serial port.
+    - The lines should start with a \x01 char, and end with a \x04 char.
+
+
+    Returns
+    -------
+    output : a dict full of parsed values. z-units are converted to metres.
+
+    """
     if type(chunk) is list:
         lines = chunk
     else:
         lines = chunk.split('\n')
 
     #-------------------------------------
+
     header = lines[0]
     if header[0] != "\x01":
         raise Exception('wrong header - expected \\x01')
+    output = {}
     output['softwarelevel'] = header[4:7]
     output['with_sky_condition_data'] = (header[7] == "2")
     samplerange = header[8]
@@ -101,30 +107,28 @@ def parse_ceilometer_chunk(chunk):
     return output
 
 
+def read_next_chunk(reader):
+    """
+    Keeps reading lines from a file like reader object until it has a chunk
+    that starts with a \x01 char and ends with a line that starts with \x03.
 
+    Parameters
+    ----------
+    reader : a reader object (not sure that is the correct type description - TODO)
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    reader = s.makefile("r")
+    Returns
+    -------
+    lines : the data chunk as a list of lines.
 
-    output={}
-
-    header = True
-    while header:
-        header = reader.readline()
-        if header[0] == "\x01":
-            break
-    lines=[header]
+    """
+    has_found_header = False
     while True:
         line = reader.readline()
-        lines.append(line)
+        if line[0] == "\x01":
+            lines=[]
+            has_found_header = True
+        if has_found_header:
+            lines.append(line)
         if line[0] == "\x03":
-            break
-
-    output = parse_ceilometer_chunk(lines)
-
-    plt.plot(output['profile'], output['z'])
-    plt.ylabel('ft')
-    plt.plot(output['cloud_base']*0,output['cloud_base'],'ro')
-    pprint(output)
+            return lines
 
