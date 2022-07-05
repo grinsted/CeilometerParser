@@ -1,0 +1,12 @@
+[Unit]
+Description=EGRIP Ceilometer
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/egrip/logger.py
+WorkingDirectory=/home/egrip/
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
