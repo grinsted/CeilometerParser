@@ -24,7 +24,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     output = ceilometer.parse_ceilometer_chunk(lines)
 
     plt.plot(output['profile'], output['z'])
-    plt.ylabel('ft')
+    plt.ylabel('m')
     plt.plot(output['cloud_base']*0,output['cloud_base'],'ro')
     pprint(output)
 
