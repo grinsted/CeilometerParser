@@ -109,7 +109,7 @@ def parse_ceilometer_chunk(chunk):
 
 def read_next_chunk(reader):
     """
-    Keeps reading lines from a file like reader object until it has a chunk
+    Keeps reading lines from a file-like reader object until it has a chunk
     that starts with a \x01 char and ends with a line that starts with \x03.
 
     Parameters
