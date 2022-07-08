@@ -14,7 +14,7 @@ import pandas as pd
 import datetime
 import os
 
-fname = r"\\10.2.3.1\Public\ceilometer\ceilometer.log.2022-06-28"
+fname = r"\\10.2.3.1\Public\ceilometer\ceilometer.log.2022-06-26"
 
 sz = os.stat(fname).st_size
 N = int(sz/(7657-50)) #This is how much is allocated.
@@ -27,7 +27,7 @@ with open(fname, "r") as f:
     for i in tqdm(range(N)):
         data = ceilometer.parse_next_chunk(f)
         if not data:
-            #crop data here:
+            #EOF... so crop data matrix here:
             V=V[:,:i]
             break
 
@@ -48,5 +48,5 @@ if np.any(np.diff(t)<=datetime.timedelta(seconds=0)):
 
 da = xr.DataArray(V, coords = [z, t], dims = ['z', 'time'])
 
-da.plot()
+da.plot.imshow()
 # TODO: plot with axes, and flip y-direction.
