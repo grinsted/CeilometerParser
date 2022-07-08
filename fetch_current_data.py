@@ -19,9 +19,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     reader = s.makefile("r")
 
-    lines = ceilometer.read_next_chunk(reader)
-
-    output = ceilometer.parse_ceilometer_chunk(lines)
+    output = ceilometer.parse_next_chunk(reader)
 
     plt.plot(output['profile'], output['z'])
     plt.ylabel('m')

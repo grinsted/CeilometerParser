@@ -77,8 +77,8 @@ def parse_ceilometer_chunk(chunk):
         print('Warning/Alarm',output['warning_alarm'],output['status'])
     if output['detection_status']=='4':
         #full obscuration
-        output['vertical_visibility'] = cloud_base[0]
-        output['highest_signal_detected'] = cloud_base[1]
+        output['vertical_visibility'] = output['cloud_base'][0]
+        output['highest_signal_detected'] = output['cloud_base'][1]
         output['cloud_base']= np.array([np.nan,np.nan,np.nan])
     else:
         output['vertical_visibility'] = None
@@ -107,7 +107,7 @@ def parse_ceilometer_chunk(chunk):
     return output
 
 
-def read_next_chunk(reader):
+def parse_next_chunk(reader):
     """
     Keeps reading lines from a file-like reader object until it has a chunk
     that starts with a \x01 char and ends with a line that starts with \x03.
@@ -124,11 +124,13 @@ def read_next_chunk(reader):
     has_found_header = False
     while True:
         line = reader.readline()
+        if not line:
+            return None
         if line[0] == "\x01":
             lines=[]
             has_found_header = True
         if has_found_header:
             lines.append(line)
         if line[0] == "\x03":
-            return lines
+            return parse_ceilometer_chunk(lines)
 
