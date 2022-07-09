@@ -69,7 +69,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             #           cmap='seismic_r',clim=[-10000, 10000],origin='lower')
             #plt.axis('auto')
             with plt.style.context('fivethirtyeight'):
-                plt.pcolormesh(range(Nbuffer),z,V, cmap='seismic_r', vmin=-10000, vmax=10000)
+                plt.pcolormesh(range(Nbuffer),z,V,
+                               cmap='seismic_r', vmin=-10000, vmax=10000,
+                               shading='auto')
                 for level in output['cloud_base']:
                     plt.annotate(f' {level:.0f} m',(Nbuffer,level),verticalalignment='top',horizontalalignment='left')
 
