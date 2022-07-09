@@ -38,9 +38,11 @@ def index():
         lines = ceilometer.read_next_chunk(reader)
 
         output = ceilometer.parse_ceilometer_chunk(lines)
-        output['date_time'] = datetime.now()
+        output['datetime'] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     return json.dumps(output, cls=NumpyEncoder)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8400, host='0.0.0.0')
