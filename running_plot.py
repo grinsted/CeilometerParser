@@ -22,7 +22,10 @@ import os
 import json
 import time
 import json
+import gc
+import matplotlib
 
+matplotlib.use('Agg')
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -31,14 +34,14 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-HOST = "10.2.3.13"  # ceilometer fixed ip
+HOST = "127.0.0.1"  # ceilometer fixed ip
 PORT = 2001  # Port to listen on (non-privileged ports are > 1023)
 
 dt = 3 #sample rate at every 3 seconds
 Nbuffer = int(2*3600/dt) #buffer 2hours
 
 
-folder='.'
+folder='/var/www/html'
 image_file = f'{folder}/ceilometer.png'
 json_file = f'{folder}/ceilometer.json'
 
@@ -94,22 +97,27 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         t[bufferpos] = tnow
         buffer[:,bufferpos] = output['profile']
         bufferpos = (bufferpos+1) % Nbuffer
+        print('base:', output['cloud_base'])
 
-        if tnow-tlastfig>np.timedelta64(1,'m'):
+        if tnow-tlastfig>np.timedelta64(2,'m'):
             tlastfig = tnow
+            print('making figure')
+            with open(json_file,'w') as file:
+                file.write(json.dumps(output, cls=NumpyEncoder))
 
             ix = (np.arange(Nbuffer)+bufferpos) % Nbuffer
             V=buffer[:,ix]
             tt= t[ix]
 
             with plt.style.context('fivethirtyeight'):
+                fig = plt.figure(figsize=[900/100,500/100], dpi=100, num=1, clear=True)
                 plt.pcolormesh(range(Nbuffer),z,V,
                                cmap='seismic_r', vmin=-15000, vmax=15000,
                                shading='auto')
                 for level in output['cloud_base']:
                     plt.annotate(f' {level:.0f} m',(Nbuffer,level),verticalalignment='top',horizontalalignment='left')
 
-                plt.gca().set_yscale("function", functions=[lambda x: np.sign(x)*np.sqrt(np.abs(x)), lambda x: np.sign(x)*(x**2)])
+                plt.gca().set_yscale("function", functions=[lambda x: np.sign(x+10)*np.sqrt(np.abs(x+10)), lambda x: np.sign(x)*(x**2)-10])
                 plt.grid()
                 plt.ylabel('meters above ground')
                 plt.ylim([0, 3000])
@@ -120,8 +128,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 stnow =tnow.item().strftime('%Y-%m-%d')
                 plt.title(f'EGRIP ceilometer {stnow}')
                 if image_file:
-                    dpi=100
-                    plt.savefig(image_file,figsize=[900/dpi,720/dpi],dpi=dpi,bbox_inches='tight')
-                plt.show()
-
-
+                    plt.savefig(image_file,bbox_inches='tight')
+                plt.gca().cla()
+                fig.clear()
+                plt.close(fig)
+                gc.collect()
