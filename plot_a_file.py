@@ -15,6 +15,7 @@ import datetime
 import os
 
 fname = r"\\10.2.3.1\Public\ceilometer\ceilometer.log.2022-06-26"
+fname = r'C:\Users\ag\Downloads\ceilometer.log.2022-06-27'
 
 sz = os.stat(fname).st_size
 N = int(sz/(7657-50)) #This is how much is allocated.
@@ -25,7 +26,11 @@ V = None
 t = []
 with open(fname, "r") as f:
     for i in tqdm(range(N)):
-        data = ceilometer.parse_next_chunk(f)
+        try:
+            data = ceilometer.parse_next_chunk(f)
+        except:
+            #broken record...
+            continue
         if not data:
             #EOF... so crop data matrix here:
             V=V[:,:i]
