@@ -38,7 +38,7 @@ def parse_ceilometer_chunk(chunk):
     #-------------------------------------
 
     header = lines[0]
-    if not header.startswith("\x01CL"):
+    if header[0] != "\x01":
         raise Exception('wrong header - expected \\x01')
     output = {}
     output['softwarelevel'] = header[4:7]
@@ -54,8 +54,6 @@ def parse_ceilometer_chunk(chunk):
         dz, N = 5, 770
     elif samplerange == "5":
         dz, N = None, None
-    else:
-        print('ERROR in header:',header)
     z = np.arange(0, dz * N, dz) #This is already in m.
     output['z']=z
 
@@ -98,6 +96,7 @@ def parse_ceilometer_chunk(chunk):
     #     output['cloud_octas'][:]=np.nan
     #---------------------------------
     line4 = lines[3].rstrip()
+    output['line4_unparsed']=line4
     #TODO
     #-----------------------------------
     if dz:
@@ -128,7 +127,7 @@ def parse_next_chunk(reader):
         line = reader.readline()
         if not line:
             return None
-        if line.startswith("\x01CL"):
+        if line[0] == "\x01":
             lines=[]
             has_found_header = True
         if has_found_header:
