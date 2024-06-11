@@ -45,7 +45,7 @@ Nbuffer = int(2 * 3600 / dt)  # buffer 2hours
 
 tempfolder = tempfile.gettempdir()
 folder = "/var/www/html"
-# folder = "/users/ag/Downloads"  # ASLAKS TEST FOLDER
+folder = "/users/ag/Downloads"  # ASLAKS TEST FOLDER
 
 image_file = f"{folder}/ceilometer.png"
 json_file = f"{folder}/ceilometer.json"
@@ -92,7 +92,7 @@ while True:
     if not connected:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(dt)
+            # s.settimeout(dt * 3)
             s.connect((HOST, PORT))
             reader = s.makefile("r")
             connected = True
