@@ -98,13 +98,13 @@ while True:
             connected = True
             print("connected to Ceilometer...")
         except:
-            print('exception while trying to connect...')
+            print("exception while trying to connect...")
             s, reader = None, None
 
     try:
         output = ceilometer.parse_next_chunk(reader)
     except:
-        print("exception while parsing.')
+        print("exception while parsing.")
         connected = False
         reader = None
         t[bufferpos] = t_reset
