@@ -9,12 +9,12 @@ Created on Tue Jul  5 21:34:15 2022
 import socket
 import ceilometer
 
-# from pprint import pprint
+from pprint import pprint
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-# from matplotlib.patches import Rectangle
-# from matplotlib.ticker import MultipleLocator, AutoMinorLocator
+from matplotlib.patches import Rectangle
+from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 import datetime
 import numpy as np
 import os
@@ -45,7 +45,7 @@ Nbuffer = int(2 * 3600 / dt)  # buffer 2hours
 
 tempfolder = tempfile.gettempdir()
 folder = "/var/www/html"
-folder = "/users/ag/Downloads"  # ASLAKS TEST FOLDER
+# folder = "/users/ag/Downloads"  # ASLAKS TEST FOLDER
 
 image_file = f"{folder}/ceilometer.png"
 json_file = f"{folder}/ceilometer.json"
@@ -98,11 +98,13 @@ while True:
             connected = True
             print("connected to Ceilometer...")
         except:
+            print('exception while trying to connect...')
             s, reader = None, None
 
     try:
         output = ceilometer.parse_next_chunk(reader)
     except:
+        print("exception while parsing.')
         connected = False
         reader = None
         t[bufferpos] = t_reset
@@ -124,7 +126,7 @@ while True:
     t[bufferpos] = tnow
     buffer[:, bufferpos] = output["profile"]
     bufferpos = (bufferpos + 1) % Nbuffer
-    # print("base:", output["cloud_base"])
+    print("base:", output["cloud_base"])
 
     if tnow - tlastfig > np.timedelta64(2, "m"):
         tlastfig = tnow
