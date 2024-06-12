@@ -45,7 +45,8 @@ Nbuffer = int(2 * 3600 / dt)  # buffer 2hours
 
 tempfolder = tempfile.gettempdir()
 folder = "/var/www/html"
-# folder = "/users/ag/Downloads"  # ASLAKS TEST FOLDER
+if os.path.exists("/users/ag/Downloads"):
+    folder = "/users/ag/Downloads"  # ASLAKS TEST FOLDER
 
 image_file = f"{folder}/ceilometer.png"
 json_file = f"{folder}/ceilometer.json"
