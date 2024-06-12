@@ -107,7 +107,7 @@ while True:
         print("exception while parsing.")
         connected = False
         reader = None
-        t[bufferpos] = t_reset
+        t[bufferpos] = now()
         if not buffer is None:
             buffer[:, bufferpos] = np.nan
         bufferpos = (bufferpos + 1) % Nbuffer
