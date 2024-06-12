@@ -97,7 +97,7 @@ while True:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(dt * 3)
             s.connect((HOST, PORT))
-            s.settimeout(dt)
+            # s.settimeout(dt)
             reader = s.makefile("r")
             connected = True
             print("connected to Ceilometer...")
