@@ -104,8 +104,6 @@ while True:
             print("exception while trying to connect...", error)
             s, reader = None, None
 
-    output = {"is_connected": connected}  # overwritten if parsing is succesful
-
     try:
         output = ceilometer.parse_next_chunk(reader)
         # ------------------------------
@@ -114,6 +112,7 @@ while True:
         print("exception while parsing.", error)
         connected = False
         reader = None
+        output = {"is_connected": connected}
         output["profile"] = np.nan
         output["cloud_base"] = [np.nan]
         if s:
