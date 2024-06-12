@@ -88,47 +88,56 @@ cmap = ListedColormap(cmap)
 s = None
 reader = None
 connected = False
+tnow = now()
 while True:
+    t_loop_start = now()
     if not connected:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # s.settimeout(dt * 3)
+            s.settimeout(dt * 3)
             s.connect((HOST, PORT))
+            s.settimeout(dt)
             reader = s.makefile("r")
             connected = True
             print("connected to Ceilometer...")
-        except:
-            print("exception while trying to connect...")
+        except Exception as error:
+            print("exception while trying to connect...", error)
             s, reader = None, None
+
+    output = {"is_connected": connected}  # overwritten if parsing is succesful
 
     try:
         output = ceilometer.parse_next_chunk(reader)
-    except:
-        print("exception while parsing.")
+        # ------------------------------
+        print("base:", output["cloud_base"])
+    except Exception as error:
+        print("exception while parsing.", error)
         connected = False
         reader = None
-        t[bufferpos] = now()
-        if not buffer is None:
-            buffer[:, bufferpos] = np.nan
-        bufferpos = (bufferpos + 1) % Nbuffer
+        output["profile"] = np.nan
+        output["cloud_base"] = [np.nan]
         if s:
             s.close()
-        time.sleep(dt)
-        continue
+        sleep_time = dt - (now() - t_loop_start) / np.timedelta64(1, "s")
+        if sleep_time > 0:
+            # probably not necessary because re-connect takes time too
+            time.sleep(sleep_time)
+
+    # ------------ ADD output to buffer ----------------
 
     tnow = now()
     strnow = tnow.item().strftime("%Y-%m-%d %H:%M:%S")
     output["time"] = strnow
 
-    if z is None:
-        z = output["z"]
+    if (z is None) and ("z" in output):
+        z = output["z"]  # this has to be a constant...
         buffer = np.empty((len(z), Nbuffer)) + np.nan
     t[bufferpos] = tnow
-    buffer[:, bufferpos] = output["profile"]
+    if buffer is not None:
+        buffer[:, bufferpos] = output["profile"]
     bufferpos = (bufferpos + 1) % Nbuffer
-    print("base:", output["cloud_base"])
 
-    if tnow - tlastfig > np.timedelta64(2, "m"):
+    if (tnow - tlastfig > np.timedelta64(1, "m")) and (buffer is not None):
         tlastfig = tnow
         print("making figure")
         with open(json_file, "w") as file:
